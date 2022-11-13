@@ -34,5 +34,5 @@ async def on_message(message):
         await IB.readArgs(arg, message.channel, message.author.mention)
 
 #keep_alive()
-token ='OTAzNDg3Mzg2MjIxMTUwMjA4.YXtsMg.zzS8AtLWj0vF1qXu2UqqTAXUxOA'
+token = open('auth.txt').read()
 client.run(token)
