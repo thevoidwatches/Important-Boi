@@ -1,10 +1,12 @@
 import discord
 import os
 import IB
-from keep_alive import keep_alive
+#from keep_alive import keep_alive
 
 #connection to discord
-client = discord.Client()
+intents = discord.Intents.default()
+intents.message_content = True
+client = discord.Client(intents=intents)
 
 #registers an event
 @client.event
@@ -31,5 +33,6 @@ async def on_message(message):
         #call a function that deciphers the arguments
         await IB.readArgs(arg, message.channel, message.author.mention)
 
-keep_alive()
-client.run(os.getenv('TOKEN'))
+#keep_alive()
+token ='OTAzNDg3Mzg2MjIxMTUwMjA4.YXtsMg.zzS8AtLWj0vF1qXu2UqqTAXUxOA'
+client.run(token)
