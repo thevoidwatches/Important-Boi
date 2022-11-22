@@ -1,12 +1,8 @@
-A discord dice-roller designed for Mutants and Masterminds. Inspired by and modeled after Kid Robot (https://github.com/jwolfman/KidRobot), all code original.
+ discord dice-roller designed for Mutants and Masterminds. Functionality inspired by jwolfman's Kid Robot (https://github.com/jwolfman/KidRobot), all code original.
 
-Add: (http://bit.ly/ImportantBoi)
+Add to a server: (http://bit.ly/ImportantBoi)
 
-
-
-HELP
-
-I recognize the following commands:
+Recognize the following commands:
 
 > $affliction, alias $a or $aff. This command is designed for rolling resistance checks against Afflictions. Usage is as follows:
 >> $a (bonus) (Affliction rank) (number of rolls)
