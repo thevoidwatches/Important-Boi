@@ -10,6 +10,7 @@ I recognize the following commands:
 
 > $affliction, alias $a or $aff. This command is designed for rolling resistance checks against Afflictions. Usage is as follows:
 >> $a (bonus) (Affliction rank) (number of rolls)
+>
 > $compare, alias $c or $check. This command is designed for checking the degree of success between two numbers. Usage is as follows:
 >> $c [number] [DC to compare to]
 > $defense, alias $d or $def. This command is designed for rolling Defend or Deflect rolls. Usage is as follows:
