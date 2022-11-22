@@ -2,7 +2,7 @@
 
 Add to a server: (http://bit.ly/ImportantBoi)
 
-Recognize the following commands:
+Recognizes the following commands:
 
 > $affliction, alias $a or $aff. This command is designed for rolling resistance checks against Afflictions. Usage is as follows:
 >> $a (bonus) (Affliction rank) (number of rolls)
