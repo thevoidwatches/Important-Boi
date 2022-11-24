@@ -7,50 +7,53 @@ import re
 random.seed()
 
 async def check(arg, a, b, channel):
-  #will compare two values and return the degrees of success (in positive numberals) or failure (negative numerals).
-  #will be used by most other functions here so should be at the top.
+  # Compares two values and return the degrees of success (in positive numberals) or failure (negative numerals).
   
-  #one result when called from within another function
+  # When called by another function, gives a simple result of the degrees of success.
   if arg == "func":
     comp = a-b
     if comp >= 0:
+      # Add 1 to correctly calculate degrees of success, as 0-4 are one degree of success.
       comp += 1
       return math.ceil(comp/5)
     else:
       return math.floor(comp/5)
-  #another result when called from the readargs function
+    
+  # When called directuly, gives a more verbose result.
   else:
-    if "help" in arg or "h" in arg:
+    if "help" in arg or "h" in arg or "?" in arg:
+      # Produces a help message explaining how to use the command.
       await channel.send("""**Comparison**
     To compare two numbers, you can use `$c`, `$check`, or `$compare`. Usage is as follows:
         `$c [Number] [DC to compare to]`
         
     This command does not accept any additional arguments.""")
+      return
     
     if len(arg) == 3 and arg[1].isnumeric() and arg[2].isnumeric():
+      # Only runs if it has the correct number of arguments and the arguments are numeric.
       a = int(arg[1])
       b = int(arg[2])
-      comp = a-b
-      if comp >= 0:
-        comp += 1
-        comp = math.ceil(comp/5)
-        if comp == 1:
-          await channel.send(arg[1] + " compared to a DC of " + arg[2] + " for 1 degree of success!")
-        else:
-          await channel.send(arg[1] + " compared to a DC of " + arg[2] + " for " + str(comp) + " degrees of success!")
+      
+      comp == await check("func", a, b, channel)
+      
+      if comp == 1:
+        await channel.send(arg[1] + " compared to a DC of " + arg[2] + " is 1 degree of success!")
+      elif comp > 1:
+        await channel.send(arg[1] + " compared to a DC of " + arg[2] + " is " + str(comp) + " degrees of success!")
+      elif comp == -1:
+        await channel.send(arg[1] + " compared to a DC of " + arg[2] + " is 1 degree of failure!")
+      elif comp < -1:
+        await channel.send(arg[1] + " compared to a DC of " + arg[2] + " is " + str(comp * -1) + " degrees of failure!")
       else:
-        comp = math.floor(comp/5)
-        if comp == -1:
-          await channel.send(arg[1] + " compared to a DC of " + arg[2] + " for 1 degree of failure!")
-        else:
-          await channel.send(arg[1] + " compared to a DC of " + arg[2] + " for " + str(comp * -1) + " degrees of success!")
+        await channel.send("An error has occured. Please contact theVoidWatches at jc.weston@yahoo.com to report this bug.")
     else:
       await channel.send("Usage error. Please input 2 numbers to compare.")
 
 async def graded(arg, channel, author):
-  #will roll a d20, add the arg if there is one, and compare to a given number, or to 10 if no number is provided. Can roll multiple times. Skill Adept is permitted, as is improved critical and hero points.
+  # Rolls a d20, adds the bonus if there is one, and compares to a given DC, or to 10 if no DC is provided. Can roll multiple times. Improved critical is permitted, as are hero points.
 
-  if "help" in arg or "h" in arg:
+  if "help" in arg or "h" in arg or "?" in arg:
     await channel.send("""**Graded Check**
     To roll a generic check against a given DC, you can use `$g`, `$graded`, or `$dc`. Usage is as follows:
         `$a (Resistance Bonus) (DC) (Number of Rolls)`
@@ -59,7 +62,6 @@ async def graded(arg, channel, author):
     This command accepts the following additional arguments:
         `%` If this argument is included, all arguments following it will be printed prior to rolls being made, allowing you to label your rolls.
        `hp` If this argument is included, any roll of 10 or below will have 10 added to it, as if this roll was rerolled using a hero point. This will not trigger a critical success if it occurs.
-       `sa` If this argument is included, any roll of 4 or below will be increased to 5, as if this roll was made using the Skill Adept advantage.
        `imp1` `imp2` `imp3` `imp4` If any of these arguments are included, rolls will be counted as critical successes on numbers below 20, as if this roll was made using a number of ranks of Improved Critical.""")
     return
 
@@ -83,64 +85,67 @@ async def graded(arg, channel, author):
         try:
           rolls = int(arg[3])
         except:
-         "Nothing here"
+          "Nothing here"
 
-  #turns the bonus into a string
+  # Turns the bonus into a string
   if bonus == 0:
     bonusPrint = ""
+  elif bonus > 0:
+    bonusPrint = "+" + str(bonus)
   else:
-    if bonus > 0:
-      bonusPrint = "+" + str(bonus)
-    else:
-      bonusPrint = str(bonus)
+    bonusPrint = str(bonus)
 
-  finPrint = author + "\n"
+  # Creates the string to be populated and printed into the channel.
+  printString = author + "\n"
 
+  # Labels the string if a % argument is provided.
   if "%" in arg:
     for a in range(arg.index("%") + 1, len(arg)):
-      finPrint += arg[a] + " "
-    finPrint += "\n"
+      printString += arg[a] + " "
+    printString += "\n"
 
   for roll in range(rolls):
-    #rolls the number
+    # Generators a random number for the roll.
     result = random.randint(1,20)
+    # The total and the result are different - the total will include bonuses.
     total = result
 
-    #checks if it was a crit
+    # Checks if the roll was a crit
     crit = await dicemod.critCheck(arg, result, True)
-    #improves the result if you have skill adept
-    if "sa" in arg and result < 5:
-      total = 5
-      sa = ", increased by Skill Adept to 5"
-    else:
-      sa = ""
-    #improves the result if you spent a hero point
+    
+    # Improves the result if you spent a hero point
     if "hp" in arg and result < 11:
       hp = ", increased by a hero point to " + str(total + 10)
       total += 10
     else:
       hp = ""
 
-    #gets the total result
+    # Adds the bonus to the total result.
     total += bonus
 
-    #checks the number of degrees of success
+    # Checks the number of degrees of success
     degrees = await check("func", total, DC, channel)
-    #turns that into a string
+    # Turns that into a verbose string
     degrees = await dicemod.degrees(degrees, DC, crit)
 
-    finPrint += await dicemod.printResult(result, sa, hp, bonusPrint, total, crit, degrees)
+    # Adds the final result to the string that will be printd.
+    printString += await dicemod.printResult(result, hp, bonusPrint, total, crit, degrees)
 
-    if roll + 1 != rolls:
-      finPrint += "\n"
+    # Adds a newline to the string that will be printed if this isn't the final roll to be made.
+    if roll+1 != rolls:
+      printString += "\n"
 
-  if len(finPrint) > 2000:
-    await channel.send("Too many characters in return. Please make fewer rolls, " + author)
+  # If the string is too long for a single Discord message, split it into individual lines. Otherwise, just send it.
+  if len(printString) > 2000:
+    finPrint = printString.splitlines()
+    for line in finPrint:
+      await channel.send(line)
   else:
-    await channel.send(finPrint)
+    await channel.send(printString)
+  return
 
 async def other(arg, channel, author):
-  if "help" in arg or "h" in arg:
+  if "help" in arg or "h" in arg or "?" in arg:
     await channel.send("""**Other Dice**
     To roll dice that are not d20s, you can use `$o` or `$other`. Usage is as follows:
         `$o (number of rolls)d[number of sides]+[bonus]`
@@ -150,53 +155,62 @@ async def other(arg, channel, author):
         `%` If this argument is included, all arguments following it will be printed prior to rolls being made, allowing you to label your rolls.""")
     return
 
-  if len(arg) >= 2 and not re.search("^[0-9]*d[0-9]+\+*[0-9]*$", arg[1]) or len(arg) < 2:
+  # The regex search looks for a format of [number]d[number], possibly followed by + or - and another number.
+  if len(arg) >= 2 and not re.search("^[1-9]*[d|D][1-9]+[-|\+]?[0-9]*$", arg[1]) or len(arg) < 2:
     await channel.send("Usage error. Please input a number of dice with a given number of sides in the format #d# or #d#+#.")
     return
 
-  dice = re.split("[\+|d]", arg[1])
+  # Splits the argument into a number of rolls, number of dice sides, and a bonus if there is one
+  dice = re.split("[\+|d|D]", arg[1])
 
-  rolls = int(dice[0])
-  if rolls < 1:
-    rolls = 1
-  
+  # Saves the number of rolls to make and the number of sides to the die
+  rolls = int(dice[0])  
   sides = int(dice[1])
-  if sides < 1:
-    sides = 1
   
+  # Extracts the bonus from the dice array if it includes them.
   if len(dice) > 2:
     bonus = int(dice[2])
-    bonusPrint = "+" + dice[2]
+    if bonus > 0:
+      bonusPrint = "+" + dice[2]
+    elif bonus < 0:
+      bonusPrint = str(dice[2])
+    else:
+      bonus = ""
   else:
     bonus = 0
     bonusPrint = ""
   
-  finPrint = author + "\n"
+  # Creates a string that will be printed to Discord.
+  printString = author + "\n"
 
+  # Adds messages preceded by the % argument, if there are any.
   if "%" in arg:
     for a in range(arg.index("%") + 1, len(arg)):
-      finPrint += arg[a] + " "
-    finPrint += "\n"
+      printString += arg[a] + " "
+    printString += "\n"
 
-  acc = 0
-
+  # Rolls dice of the appropriate size and totals their results.
+  total = 0
   for roll in range(rolls):
     result = random.randint(1,sides)
-    total = result + bonus
-    acc += total
+    total += result
+    printString += "Rolled a " + str(result) + " on a d" + str(sides) + "!\n"
+  total += bonus
 
-    finPrint += await dicemod.printResult(result, "", "", bonusPrint, total, "", "") + "\n"
-
-  finPrint += "The final total is **" + str(acc) + "**!"
-
-
-  if len(finPrint) > 2000:
-    await channel.send("Too many characters in return. Please make fewer rolls, " + author)
+  # Finishes the final message to print.
+  printString += "\nThe final total is **" + str(total) + "!**"
+    
+  # If the string is too long for a single Discord message, split it into individual lines. Otherwise, just send it.
+  if len(printString) > 2000:
+    finPrint = printString.splitlines()
+    for line in finPrint:
+      await channel.send(line)
   else:
-    await channel.send(finPrint)
+    await channel.send(printString)
+  return
 
 async def roll(arg, channel, author):
-  if "help" in arg or "h" in arg:
+  if "help" in arg or "h" in arg or "?" in arg:
     await channel.send("""**Roll**
     To make a miscellaneous d20 roll, use `$r` or `$roll`. Usage is as follows:
         `$r (Bonus) (Number of Rolls)`
@@ -205,9 +219,9 @@ async def roll(arg, channel, author):
     This command accepts the following additional arguments:
         `%` If this argument is included, all arguments following it will be printed prior to rolls being made, allowing you to label your rolls.
         `hp` If this argument is included, any roll of 10 or below will have 10 added to it, as if this roll was rerolled using a hero point. This will not trigger a critical success if it occurs.
-        `sa` If this argument is included, any roll of 4 or below will be increased to 5, as if this roll was made using the Skill Adept advantage.
         `imp1` `imp2` `imp3` `imp4` If any of these arguments are included, rolls will be counted as critical successes on numbers below 20, as if this roll was made using a number of ranks of Improved Critical.""")
     return
+  
   #sets default values
   bonus = 0
   rolls = 1
@@ -233,12 +247,12 @@ async def roll(arg, channel, author):
     else:
       bonusPrint = str(bonus)
 
-  finPrint = author + "\n"
+  printString = author + "\n"
 
   if "%" in arg:
     for a in range(arg.index("%") + 1, len(arg)):
-      finPrint += arg[a] + " "
-    finPrint += "\n"
+      printString += arg[a] + " "
+    printString += "\n"
   
   for roll in range(rolls):
     #rolls the number
@@ -248,39 +262,37 @@ async def roll(arg, channel, author):
 
     #checks if it was a crit
     crit = await dicemod.critCheck(arg, result, True)
-    #improves the result if you have skill adept
-    if "sa" in arg and result < 5:
-      total = 5
-      sa = ", increased by Skill Adept to 5"
-    else:
-      sa = ""
-    #improves the number if you spent a hero point or if this was a defense roll
+    #improves the number if you spent a hero point or if this was a defense roll.
     if "hp" in arg and result < 11:
-      hp = ", increased by a hero point to " + str(total + 10)
       total += 10
+      hp = ", increased by a hero point to " + str(total)
     elif "def" in arg and result < 11:
-      hp = ", increased to " + str(total + 10)
       total += 10
+      hp = ", increased as a Defend to " + str(total)
     else:
       hp = ""
     
     #adds the bonus
     total += bonus
 
-    finPrint += await dicemod.printResult(result, sa, hp, bonusPrint, total, crit, "")
+    printString += await dicemod.printResult(result, hp, bonusPrint, total, crit, "")
 
     if roll + 1 != rolls:
-      finPrint += "\n"
+      printString += "\n"
 
-  if len(finPrint) > 2000:
-    await channel.send("Too many characters in return. Please make fewer rolls, " + author)
+  # If the string is too long to be sent in a single Discord message, split it into individual lines. Otherwise, just send it.
+  if len(printString) > 2000:
+    finPrint = printString.splitlines()
+    for line in finPrint:
+      await channel.send(line)
   else:
-    await channel.send(finPrint)
+    await channel.send(printString)
+  return
 
 async def tough(arg, channel, author):
   #will roll a d20, add the arg if there is one, and compare to a given number, or to 10 if no number is provided. Can roll multiple times. Skill Adept is permitted, as is improved critical and hero points.
 
-  if "help" in arg or "h" in arg:
+  if "help" in arg or "h" in arg or "?" in arg:
     await channel.send("""**Toughness Check**
     To roll a check against an attack which deals damage, you can use `$t`, `$tough`, or `$toughness`. Usage is as follows:
         `$a (Resistance Bonus) (Damage Rank) (Number of Rolls)`
@@ -296,7 +308,7 @@ async def tough(arg, channel, author):
   DC = 15
   rolls = 1
 
-  #sets the value of the bonus and DC if args are provided
+  #sets the value of the bonus, DC, and number of rolls if args are provided
   if len(arg) > 1:
     try:
       bonus = int(arg[1])
@@ -322,12 +334,12 @@ async def tough(arg, channel, author):
     else:
       bonusPrint = str(bonus)
 
-  finPrint = author + "\n"
+  printString = author + "\n"
 
   if "%" in arg:
     for a in range(arg.index("%") + 1, len(arg)):
-      finPrint += arg[a] + " "
-    finPrint += "\n"
+      printString += arg[a] + " "
+    printString += "\n"
 
   for roll in range(rolls):
     #rolls the number
@@ -355,26 +367,30 @@ async def tough(arg, channel, author):
     if crit != "":
       degrees += 1
 
-    finPrint += await dicemod.printResult(result, "", hp, bonusPrint, total, crit, degreesPrint)
+    printString += await dicemod.printResult(result, "", hp, bonusPrint, total, crit, degreesPrint)
 
     if degrees >= 0:
-      finPrint += " You take no penalty!"
+      printString += " You take no penalty!"
     elif degrees == -1:
-      finPrint += " That's a **Bruise!**"
+      printString += " That's a **Bruise!**"
     elif degrees == -2:
-      finPrint += " That's a **Bruise** and you are **Dazed** until the end of your next turn!"
+      printString += " That's a **Bruise** and you are **Dazed** until the end of your next turn!"
     elif degrees == -3:
-      finPrint += " That's a **Bruise** and you are **Staggered!**"
+      printString += " That's a **Bruise** and you are **Staggered!**"
     else:
-      finPrint += " You are **Incapacitated!**"
+      printString += " You are **Incapacitated!**"
 
     if roll + 1 != rolls:
-      finPrint += "\n"
+      printString += "\n"
 
-  if len(finPrint) > 2000:
-    await channel.send("Too many characters in return. Please make fewer rolls, " + author)
+  # If the string is too long for a single Discord message, split it into individual lines. Otherwise, just send it.
+  if len(printString) > 2000:
+    finPrint = printString.splitlines()
+    for line in finPrint:
+      await channel.send(line)
   else:
-    await channel.send(finPrint)
+    await channel.send(printString)
+  return
 
 async def weak(arg, channel, author):
   if len(arg) > 1 and arg[1] == "help" or len(arg) > 1 and arg[1] == "h":
@@ -419,12 +435,12 @@ async def weak(arg, channel, author):
     else:
       bonusPrint = str(bonus)
 
-  finPrint = author + "\n"
+  printString = author + "\n"
 
   if "%" in arg:
     for a in range(arg.index("%") + 1, len(arg)):
-      finPrint += arg[a] + " "
-    finPrint += "\n"
+      printString += arg[a] + " "
+    printString += "\n"
 
   for roll in range(rolls):
     #rolls the number
@@ -443,21 +459,24 @@ async def weak(arg, channel, author):
 
     pointsLost = DC - total
 
-    finPrint += await dicemod.printResult(result, "", hp, bonusPrint, total, "", "") + "With a DC of " + str(DC) + ","
+    printString += await dicemod.printResult(result, "", hp, bonusPrint, total, "", "") + "With a DC of " + str(DC) + ","
 
     if pointsLost > 0:
-      finPrint += " you lose **" + str(pointsLost) + " PP** from the affected trait or traits!"
+      printString += " you lose **" + str(pointsLost) + " PP** from the affected trait or traits!"
     else:
-      finPrint += " you take no penalty!"
+      printString += " you take no penalty!"
 
     if roll + 1 != rolls:
-      finPrint += "\n"
+      printString += "\n"
 
-  if len(finPrint) > 2000:
-    await channel.send("Too many characters in return. Please make fewer rolls, " + author)
+  # If the string is too long for a single Discord message, split it into individual lines. Otherwise, just send it.
+  if len(printString) > 2000:
+    finPrint = printString.splitlines()
+    for line in finPrint:
+      await channel.send(line)
   else:
-    await channel.send(finPrint)
- 
+    await channel.send(printString)
+  return
 
 async def readArgs(arg, channel, author):
   #should be a series of ifs that ends with an else for a command it doesn't recognize
@@ -467,7 +486,7 @@ async def readArgs(arg, channel, author):
     else:
       break
 
-  if arg[0] == "$help":
+  if arg[0] == "$help" or arg[0] == "$h" or arg[0] == "$?":
     await channel.send("""**Help**
     I recognize the following commands:
         `$affliction`, alias `$a` or `$aff`. This command is designed for rolling resistance checks against Afflictions. Usage is as follows:
@@ -490,10 +509,9 @@ async def readArgs(arg, channel, author):
     Additional details on all of these commands can be seen by using the command with the `h` or `help` arguments. Commands may also respond to the following arguments:
         `%` If this argument is included, all arguments following it will be printed prior to rolls being made, allowing you to label your rolls.
         `hp` If this argument is included, any roll of 10 or below will have 10 added to it, as if this roll was rerolled using a hero point. This will not trigger a critical success if it occurs.
-        `sa` If this argument is included, any roll of 4 or below will be increased to 5, as if this roll was made using the Skill Adept advantage.
         `imp1` `imp2` `imp3` `imp4` If any of these arguments are included, rolls will be counted as critical successes on numbers below 20, as if this roll was made using a number of ranks of Improved Critical.""")
   elif arg[0] == "$a" or arg[0] == "$aff" or arg[0] == "$affliction":
-    if "help" in arg or "h" in arg:
+    if "help" in arg or "h" in arg or "?" in arg:
       await channel.send("""**Afflictions**
     To roll a resistance check against an affliction, you can use `$a`, `$aff`, or `$affliction`. Usage is as follows:
         `$a (Resistance Bonus) (Affliction Rank) (Number of Rolls)`
@@ -506,8 +524,6 @@ async def readArgs(arg, channel, author):
     This is an alias for the *Graded Check* command (`$g` `$graded` `dc`)""")
     else:
       #removes disallowed commands
-      while "sa" in arg:
-        arg.remove("sa")
       while "imp1" in arg:
         arg.remove("imp1")
       while "imp2" in arg:
@@ -519,7 +535,7 @@ async def readArgs(arg, channel, author):
       
       #turns rank into DC
       if len(arg) > 2 and arg[2].isnumeric():
-        arg[2] = str( int(arg[2]) + 10)
+        arg[2] = str( int(arg[2]) + 10 )
 
       #calls graded
       await graded(arg, channel, author)
@@ -537,8 +553,6 @@ async def readArgs(arg, channel, author):
     
     This is an alias for the *Roll* Command (`$r` `$roll`)""")
     else:
-      while "sa" in arg:
-        arg.remove("sa")
       while "imp1" in arg:
         arg.remove("imp1")
       while "imp2" in arg:
@@ -561,5 +575,8 @@ async def readArgs(arg, channel, author):
     await tough(arg, channel, author)
   elif arg[0] == "$w" or arg[0] == "$weak" or arg[0] == "$weaken":
     await weak(arg, channel, author)
+  elif arg[0] == "$reset" or arg[0] == "$kill":
+    random.seed()
+    await channel.send("'I've reset my random number generator.'")
   else:
     await channel.send("`I don't recognize that command.`")
