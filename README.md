@@ -1,4 +1,4 @@
- discord dice-roller designed for Mutants and Masterminds. Functionality inspired by jwolfman's Kid Robot (https://github.com/jwolfman/KidRobot), all code original.
+A dice-rolling Discord bot designed for the Mutants and Masterminds ttrpg system by Green Ronin. Functionality inspired by jwolfman's Kid Robot (https://github.com/jwolfman/KidRobot), all code original.
 
 Add to a server: (http://bit.ly/ImportantBoi)
 
