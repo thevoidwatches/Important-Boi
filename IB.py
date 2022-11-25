@@ -21,7 +21,7 @@ async def check(arg, a, b, channel):
     
   # When called directuly, gives a more verbose result.
   else:
-    if "help" in arg or "h" in arg or "?" in arg:
+    if "?" in arg:
       # Produces a help message explaining how to use the command.
       await channel.send("""**Comparison**
     To compare two numbers, you can use `$c`, `$check`, or `$compare`. Usage is as follows:
@@ -53,7 +53,7 @@ async def check(arg, a, b, channel):
 async def graded(arg, channel, author):
   # Rolls a d20, adds the bonus if there is one, and compares to a given DC, or to 10 if no DC is provided. Can roll multiple times. Improved critical is permitted, as are hero points.
 
-  if "help" in arg or "h" in arg or "?" in arg:
+  if "?" in arg:
     await channel.send("""**Graded Check**
     To roll a generic check against a given DC, you can use `$g`, `$graded`, or `$dc`. Usage is as follows:
         `$a (Resistance Bonus) (DC) (Number of Rolls)`
@@ -145,7 +145,7 @@ async def graded(arg, channel, author):
   return
 
 async def other(arg, channel, author):
-  if "help" in arg or "h" in arg or "?" in arg:
+  if "?" in arg:
     await channel.send("""**Other Dice**
     To roll dice that are not d20s, you can use `$o` or `$other`. Usage is as follows:
         `$o (number of rolls)d[number of sides]+[bonus]`
@@ -210,7 +210,7 @@ async def other(arg, channel, author):
   return
 
 async def roll(arg, channel, author):
-  if "help" in arg or "h" in arg or "?" in arg:
+  if "?" in arg:
     await channel.send("""**Roll**
     To make a miscellaneous d20 roll, use `$r` or `$roll`. Usage is as follows:
         `$r (Bonus) (Number of Rolls)`
@@ -292,7 +292,7 @@ async def roll(arg, channel, author):
 async def tough(arg, channel, author):
   #will roll a d20, add the arg if there is one, and compare to a given number, or to 10 if no number is provided. Can roll multiple times. Skill Adept is permitted, as is improved critical and hero points.
 
-  if "help" in arg or "h" in arg or "?" in arg:
+  if "?" in arg:
     await channel.send("""**Toughness Check**
     To roll a check against an attack which deals damage, you can use `$t`, `$tough`, or `$toughness`. Usage is as follows:
         `$a (Resistance Bonus) (Damage Rank) (Number of Rolls)`
@@ -367,7 +367,7 @@ async def tough(arg, channel, author):
     if crit != "":
       degrees += 1
 
-    printString += await dicemod.printResult(result, "", hp, bonusPrint, total, crit, degreesPrint)
+    printString += await dicemod.printResult(result, hp, bonusPrint, total, crit, degreesPrint)
 
     if degrees >= 0:
       printString += " You take no penalty!"
@@ -393,7 +393,7 @@ async def tough(arg, channel, author):
   return
 
 async def weak(arg, channel, author):
-  if len(arg) > 1 and arg[1] == "help" or len(arg) > 1 and arg[1] == "h":
+  if "?" in arg:
     await channel.send("""**Toughness Check**
     To roll a check against an attack which deals damage, you can use `$t`, `$tough`, or `$toughness`. Usage is as follows:
         `$a (Resistance Bonus) (Damage Rank) (Number of Rolls)`
@@ -417,7 +417,7 @@ async def weak(arg, channel, author):
       "Nothing here"
     if len(arg) > 2:
       try:
-        DC = int(arg[2])
+        DC = 10+int(arg[2])
       except:
         "Nothing here"
       if len(arg) > 3:
@@ -459,7 +459,7 @@ async def weak(arg, channel, author):
 
     pointsLost = DC - total
 
-    printString += await dicemod.printResult(result, "", hp, bonusPrint, total, "", "") + "With a DC of " + str(DC) + ","
+    printString += await dicemod.printResult(result, hp, bonusPrint, total, "", "") + "With a DC of " + str(DC) + ","
 
     if pointsLost > 0:
       printString += " you lose **" + str(pointsLost) + " PP** from the affected trait or traits!"
@@ -506,12 +506,12 @@ async def readArgs(arg, channel, author):
         `$weaken`, alias `$w` or `$weak`. This command is designed for rolling resistance checks against Weakens. Usage is as follows:
             `$w (bonus) (Weaken rank) (number of rolls)`""")
     await channel.send("""** **
-    Additional details on all of these commands can be seen by using the command with the `h` or `help` arguments. Commands may also respond to the following arguments:
+    Additional details on all of these commands can be seen by using the command with the `?` argument. Commands may also respond to the following arguments:
         `%` If this argument is included, all arguments following it will be printed prior to rolls being made, allowing you to label your rolls.
         `hp` If this argument is included, any roll of 10 or below will have 10 added to it, as if this roll was rerolled using a hero point. This will not trigger a critical success if it occurs.
         `imp1` `imp2` `imp3` `imp4` If any of these arguments are included, rolls will be counted as critical successes on numbers below 20, as if this roll was made using a number of ranks of Improved Critical.""")
   elif arg[0] == "$a" or arg[0] == "$aff" or arg[0] == "$affliction":
-    if "help" in arg or "h" in arg or "?" in arg:
+    if "?" in arg:
       await channel.send("""**Afflictions**
     To roll a resistance check against an affliction, you can use `$a`, `$aff`, or `$affliction`. Usage is as follows:
         `$a (Resistance Bonus) (Affliction Rank) (Number of Rolls)`
@@ -542,7 +542,7 @@ async def readArgs(arg, channel, author):
   elif arg[0] == "$c" or arg[0] == "$compare" or arg[0] == "$check":
     await check(arg, 0, 0, channel)
   elif arg[0] == "$d" or arg[0] == "$def" or arg[0] == "$defense":
-    if "help" in arg or "h" in arg:
+    if "?" in arg:
       await channel.send("""**Defense**
     To roll a defense check using Deflect or the Defend action, you can use `$d`, `$def`, or `$defend`. Usage is as follows:
         `$d (Defense) (Number of Rolls)`
@@ -577,6 +577,6 @@ async def readArgs(arg, channel, author):
     await weak(arg, channel, author)
   elif arg[0] == "$reset" or arg[0] == "$kill":
     random.seed()
-    await channel.send("'I've reset my random number generator.'")
+    await channel.send("`I've reset my random number generator.`")
   else:
     await channel.send("`I don't recognize that command.`")

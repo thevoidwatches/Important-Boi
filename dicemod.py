@@ -46,5 +46,5 @@ async def printResult(result, hp, bonus, total, crit, degrees):
 
   if result == total:
     return "Rolled a **" + str(result) + crit + "!** " + crit5 + degrees
-  else
+  else:
     return "Rolled a " + str(result) + hp + bonus + ", for a total of **" + str(total) + crit + "**! " + crit5 + degrees
