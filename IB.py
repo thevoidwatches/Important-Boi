@@ -481,7 +481,7 @@ async def weak(arg, channel, author):
 async def readArgs(arg, channel, author):
   #should be a series of ifs that ends with an else for a command it doesn't recognize
   for a in range(1,len(arg)):
-    if not re.search("[a-z]|[A-Z]|%", arg[a]):
+    if not re.search("\?|[a-z]|[A-Z]|%", arg[a]):
       arg[a] = str(eval(arg[a]))
     else:
       break
