@@ -35,7 +35,7 @@ async def check(arg, a, b, channel):
       a = int(arg[1])
       b = int(arg[2])
       
-      comp == await check("func", a, b, channel)
+      comp = await check("func", a, b, channel)
       
       if comp == 1:
         await channel.send(arg[1] + " compared to a DC of " + arg[2] + " is 1 degree of success!")
