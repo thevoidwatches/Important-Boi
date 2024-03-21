@@ -156,12 +156,12 @@ async def other(arg, channel, author):
     return
 
   # The regex search looks for a format of [number]d[number], possibly followed by + or - and another number.
-  if len(arg) >= 2 and not re.search("^[1-9]*[d|D][1-9]+[-|\+]?[0-9]*$", arg[1]) or len(arg) < 2:
+  if len(arg) >= 2 and not re.search("^[1-9]*[dD][1-9]+0*[-\\+]?[0-9]*$", arg[1]) or len(arg) < 2:
     await channel.send("Usage error. Please input a number of dice with a given number of sides in the format #d# or #d#+#.")
     return
 
   # Splits the argument into a number of rolls, number of dice sides, and a bonus if there is one
-  dice = re.split("[\+|d|D]", arg[1])
+  dice = re.split("[\\+\\-dD]", arg[1])
 
   # Saves the number of rolls to make and the number of sides to the die
   rolls = int(dice[0])  
@@ -170,6 +170,8 @@ async def other(arg, channel, author):
   # Extracts the bonus from the dice array if it includes them.
   if len(dice) > 2:
     bonus = int(dice[2])
+    if "-" in arg[1]:
+      bonus = bonus * -1
     if bonus > 0:
       bonusPrint = "+" + dice[2]
     elif bonus < 0:
@@ -481,7 +483,7 @@ async def weak(arg, channel, author):
 async def readArgs(arg, channel, author):
   #should be a series of ifs that ends with an else for a command it doesn't recognize
   for a in range(1,len(arg)):
-    if not re.search("\?|[a-z]|[A-Z]|%", arg[a]):
+    if not re.search("\\?|[a-z]|[A-Z]|%", arg[a]):
       arg[a] = str(eval(arg[a]))
     else:
       break

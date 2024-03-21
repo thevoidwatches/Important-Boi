@@ -29,4 +29,4 @@ async def on_message(message):
         await IB.readArgs(arg, message.channel, message.author.mention)
 
 token = open('auth.txt').read()
-client.run(token)
+client.run(token, reconnect = True)
