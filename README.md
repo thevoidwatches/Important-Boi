@@ -1,6 +1,8 @@
-A dice-rolling Discord bot designed for the Mutants and Masterminds ttrpg system by Green Ronin. Functionality inspired by jwolfman's Kid Robot (https://github.com/jwolfman/KidRobot), all code original.
+A dice-rolling Discord bot designed for the Mutants and Masterminds ttrpg system by [Green Ronin](https://greenronin.com/). Functionality inspired by [jwolfman's Kid Robot](https://github.com/jwolfman/KidRobot), all code original.
 
-Add to a server: (http://bit.ly/ImportantBoi)
+[Add to a server.](http://bit.ly/ImportantBoi)
+
+To run your own copy of the Important Boi, simply download the code, create a discord bot through the [discord developer portal](https://discord.com/developers/applications), then save the bot's token in a file called auth.txt in the same folder as the downloaded code. Opening run.bat will then boot up your own copy of the bot.
 
 Recognizes the following commands:
 
