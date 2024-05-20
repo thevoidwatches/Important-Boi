@@ -488,8 +488,10 @@ async def readArgs(arg, channel, author):
     else:
       break
 
-  if arg[0] == "$help" or arg[0] == "$h" or arg[0] == "$?":
-    await channel.send("""**Help**
+
+  match arg[0]:
+    case "$help" | "$h" | "$?":
+      await channel.send("""**Help**
     I recognize the following commands:
         `$affliction`, alias `$a` or `$aff`. This command is designed for rolling resistance checks against Afflictions. Usage is as follows:
             `$a (bonus) (Affliction rank) (number of rolls)`
@@ -507,14 +509,14 @@ async def readArgs(arg, channel, author):
             `$t (bonus) (Damage rank) (number of rolls)`
         `$weaken`, alias `$w` or `$weak`. This command is designed for rolling resistance checks against Weakens. Usage is as follows:
             `$w (bonus) (Weaken rank) (number of rolls)`""")
-    await channel.send("""** **
+      await channel.send("""** **
     Additional details on all of these commands can be seen by using the command with the `?` argument. Commands may also respond to the following arguments:
         `%` If this argument is included, all arguments following it will be printed prior to rolls being made, allowing you to label your rolls.
         `hp` If this argument is included, any roll of 10 or below will have 10 added to it, as if this roll was rerolled using a hero point. This will not trigger a critical success if it occurs.
         `imp1` `imp2` `imp3` `imp4` If any of these arguments are included, rolls will be counted as critical successes on numbers below 20, as if this roll was made using a number of ranks of Improved Critical.""")
-  elif arg[0] == "$a" or arg[0] == "$aff" or arg[0] == "$affliction":
-    if "?" in arg:
-      await channel.send("""**Afflictions**
+    case "$a" | "$aff"  "$affliction":
+      if "?" in arg:
+        await channel.send("""**Afflictions**
     To roll a resistance check against an affliction, you can use `$a`, `$aff`, or `$affliction`. Usage is as follows:
         `$a (Resistance Bonus) (Affliction Rank) (Number of Rolls)`
     If no resistance bonus is provided, nothing will be added to the roll. If no affliction rank is provided, the DC will be assumed to be 0. If no number of rolls is provided, a single roll will be made.
@@ -524,28 +526,28 @@ async def readArgs(arg, channel, author):
         `hp` If this argument is included, any roll of 10 or below will have 10 added to it, as if this roll was rerolled using a hero point. This will not trigger a critical success if it occurs.
            
     This is an alias for the *Graded Check* command (`$g` `$graded` `dc`)""")
-    else:
-      #removes disallowed commands
-      while "imp1" in arg:
-        arg.remove("imp1")
-      while "imp2" in arg:
-        arg.remove("imp2")
-      while "imp3" in arg:
-        arg.remove("imp3")
-      while "imp4" in arg:
-        arg.remove("imp4")
+      else:
+        #removes disallowed commands
+        while "imp1" in arg:
+          arg.remove("imp1")
+        while "imp2" in arg:
+          arg.remove("imp2")
+        while "imp3" in arg:
+          arg.remove("imp3")
+        while "imp4" in arg:
+          arg.remove("imp4")
       
-      #turns rank into DC
-      if len(arg) > 2 and arg[2].isnumeric():
-        arg[2] = str( int(arg[2]) + 10 )
+        #turns rank into DC
+        if len(arg) > 2 and arg[2].isnumeric():
+          arg[2] = str( int(arg[2]) + 10 )
 
-      #calls graded
-      await graded(arg, channel, author)
-  elif arg[0] == "$c" or arg[0] == "$compare" or arg[0] == "$check":
-    await check(arg, 0, 0, channel)
-  elif arg[0] == "$d" or arg[0] == "$def" or arg[0] == "$defense":
-    if "?" in arg:
-      await channel.send("""**Defense**
+        #calls graded
+        await graded(arg, channel, author)
+    case "$c" | "$compare" | "$check":
+      await check(arg, 0, 0, channel)
+    case "$d" | "$def" | "$defense":
+      if "?" in arg:
+        await channel.send("""**Defense**
     To roll a defense check using Deflect or the Defend action, you can use `$d`, `$def`, or `$defend`. Usage is as follows:
         `$d (Defense) (Number of Rolls)`
     If no defense bonus is provided, nothing will be added to the roll. If no number of rolls is provided, a single roll will be made.
@@ -554,31 +556,34 @@ async def readArgs(arg, channel, author):
         `%` If this argument is included, all arguments following it will be printed prior to rolls being made, allowing you to label your rolls.
     
     This is an alias for the *Roll* Command (`$r` `$roll`)""")
-    else:
-      while "imp1" in arg:
-        arg.remove("imp1")
-      while "imp2" in arg:
-        arg.remove("imp2")
-      while "imp3" in arg:
-        arg.remove("imp3")
-      while "imp4" in arg:
-        arg.remove("imp4")
-      while "hp" in arg:
-        arg.remove("hp")
-      arg.append("def")
+      else:
+        while "imp1" in arg:
+          arg.remove("imp1")
+        while "imp2" in arg:
+          arg.remove("imp2")
+        while "imp3" in arg:
+          arg.remove("imp3")
+        while "imp4" in arg:
+          arg.remove("imp4")
+        while "hp" in arg:
+          arg.remove("hp")
+        arg.append("def")
+        await roll(arg, channel, author)
+    case "$g" | "$graded" | "$dc":
+      await graded(arg, channel, author)
+    case "$o" | "$other":
+      await other(arg, channel, author)
+    case "$r" | "$roll":
       await roll(arg, channel, author)
-  elif arg[0] == "$g" or arg[0] == "$graded" or arg[0] == "$dc":
-    await graded(arg, channel, author)
-  elif arg[0] == "$o" or arg[0] == "$other":
-    await other(arg, channel, author)
-  elif arg[0] == "$r" or arg[0] == "$roll":
-    await roll(arg, channel, author)
-  elif arg[0] == "$t" or arg[0] == "$tough" or arg[0] == "$toughness":
-    await tough(arg, channel, author)
-  elif arg[0] == "$w" or arg[0] == "$weak" or arg[0] == "$weaken":
-    await weak(arg, channel, author)
-  elif arg[0] == "$reset" or arg[0] == "$kill":
-    random.seed()
-    await channel.send("`I've reset my random number generator.`")
-  else:
-    await channel.send("`I don't recognize that command.`")
+    case "$t" | "$tough" | "$toughness":
+      await tough(arg, channel, author)
+    case "$w" | "$weak" | "$weaken":
+      await weak(arg, channel, author)
+    case "$reset" | "$seed":
+      random.seed()
+      await channel.send("`I've reset my random number generator.`")
+    case "$close" | "$kill":
+      await channel.send("`Closing the Important Boi. The boi will restart in one minute.`")
+      quit()
+    case _:
+      await channel.send("`I don't recognize that command.`")
