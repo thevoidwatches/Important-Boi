@@ -177,7 +177,7 @@ async def other(arg, channel, author):
     elif bonus < 0:
       bonusPrint = str(dice[2])
     else:
-      bonus = ""
+      bonusPrint = ""
   else:
     bonus = 0
     bonusPrint = ""
