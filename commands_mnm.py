@@ -90,7 +90,7 @@ class MnM(commands.Cog):
         """Shared graded check logic used by /graded and /affliction."""
         arg_flags = build_arg_flags(hero_point=hero_point)
         bonus_print = _bonus_str(bonus)
-        print_string = label
+        print_string = f"{label}\n"
 
         for i in range(rolls):
             result = random.randint(1, 20)
@@ -150,7 +150,7 @@ class MnM(commands.Cog):
                    label: str = ""):
         arg_flags = build_arg_flags(hero_point=hero_point, improved_critical=improved_critical)
         bonus_print = _bonus_str(bonus)
-        print_string = label
+        print_string = f"{label}\n"
 
         for i in range(max(1, rolls)):
             result = random.randint(1, 20)
@@ -186,7 +186,7 @@ class MnM(commands.Cog):
     async def defense(self, interaction: Interaction, bonus: int = 0, rolls: int = 1, label: str = ""):
         arg_flags = build_arg_flags(defense=True)
         bonus_print = _bonus_str(bonus)
-        print_string = label
+        print_string = f"{label}\n"
 
         for i in range(max(1, rolls)):
             result = random.randint(1, 20)
@@ -225,7 +225,7 @@ class MnM(commands.Cog):
         dc = 15 + damage_rank
         arg_flags = build_arg_flags(hero_point=hero_point)
         bonus_print = _bonus_str(bonus)
-        print_string = label
+        print_string = f"{label}\n"
 
         for i in range(max(1, rolls)):
             result = random.randint(1, 20)
@@ -282,7 +282,7 @@ class MnM(commands.Cog):
                      rolls: int = 1, hero_point: bool = False, label: str = ""):
         dc = 10 + weaken_rank
         bonus_print = _bonus_str(bonus)
-        print_string = label
+        print_string = f"{label}\n"
 
         for i in range(max(1, rolls)):
             result = random.randint(1, 20)
