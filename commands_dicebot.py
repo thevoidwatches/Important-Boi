@@ -1,0 +1,136 @@
+#imports for basic bot functionality
+from discord import app_commands, Interaction
+from discord.ext import commands
+
+#imports for basic dicebot funcitonality
+import random
+from utilities_text import pluralize
+
+random.seed()
+
+#Utility cogs that can be the same across multiple bots
+class Utility(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @app_commands.command(description="Checks that the bot is responding by returning its ping.")
+    async def ping(self, interaction: Interaction):
+        await interaction.response.send_message(f'Pong!\nLatency: {round(self.bot.latency * 1000)}ms')
+
+    @commands.command(alias=["close"], description="Kills the running instance of the bot so it can restart.")
+    async def kill(self, context):
+        await context.send("`Closing the Important Grrl. The grrl will attempt to restart in one minute.`")
+        quit()
+
+class Dice(commands.Cog):
+    @app_commands.command(description="Reset the bot's random number generator by choosing a new seed.")
+    async def reset(self, interaction: Interaction):
+      random.seed()
+      await interaction.response.send_message("I've reset my random number generator.")
+
+    @app_commands.command(description="Roll a specified number of dice. Rolls 1d20 by default.")
+    @app_commands.describe(
+        dice="The number of dice in a single roll - the X in 'roll XdY+Z A times'",
+        sides="The number of sides on each die in a single roll - the Y in 'roll XdY+Z A times'",
+        bonus="The bonus to add to a single roll - the Z in 'roll XdY+Z A times'",
+        rolls="The number of separate rolls to make - the A in 'roll XdY+Z A times'",
+        explode="Any roll of this number or above will add to the number of dice being rolled",
+        label="The label to declare for this command."
+    )
+    async def dice(self, interaction: Interaction, dice: int = 1, sides: int = 20, bonus: int = 0, rolls: int = 1, explode: int = 0, label: str = ""):
+        # sets values to a minimum to avoid negative inputs where it doesn't make sense
+        dice = max(1, dice)
+        sides = max(2, sides)
+        rolls = max(1, rolls)
+        if explode == 1:
+            explode = 0
+            await interaction.response.send_message("Exploding dice cannot be set to explode on rolls of 1 and up. Turning exploding dice off.")
+
+        # sets whether or not to add a plus sign when appending the bonus
+        if bonus > 0:
+            bonusPrint = f"+{bonus}"
+        elif bonus == 0:
+            bonusPrint = ""
+        else:
+            bonusPrint = str(bonus)
+
+        printString = label
+
+        printString = f"\nRolling {dice}d{sides}{bonusPrint}"
+        if rolls > 1:
+            printString += f", {rolls} times"
+        if explode > 0:
+            printString += ", with exploding dice"
+            if explode < sides:
+                printString += f" on rolls of {explode} and up"
+
+        # rolls once per roll
+        for i in range(rolls):
+
+            # sets up indents if there are multiple distinct rolls being made
+            indent = ""
+            if rolls > 1:
+                printString += f"\nRoll {i+1} of {rolls}..."
+                indent = "    "
+
+            # rolls dice and reports their results
+            if (dice + explode) > 1:
+                total = 0
+                rolled = 0
+                exploded = 0
+                while rolled < dice + exploded:
+                    result = random.randint(1, sides)
+                    total += result
+                    rolled += 1
+
+                    # sets up a highlight for each max roll
+                    maxRoll = ""
+                    if result == sides:
+                        maxRoll = "**"
+                    printString += f"\n{indent}Rolled {maxRoll}{result}{maxRoll} on a d{sides}!"
+
+                    # explosion code:
+                    if explode > 0 and result >= explode:
+                        exploded += 1
+                        printString += " You get to roll an extra die!"
+                printString += f"\n{indent}The final total is **{total+bonus}!**"
+                if exploded > 0:
+                    printString += f" Your dice exploded {exploded} {pluralize(exploded,"time")}!"
+                elif explode > 0:
+                    printString += " Your dice did not explode."
+            else:
+                result = random.randint(1, sides)
+                # sets up a highlight for a max roll
+                maxRoll = ""
+                if result == sides:
+                    maxRoll = "**"
+                if bonus:
+                    printString += f"\n{indent}Rolled {maxRoll}{result}{maxRoll}{bonusPrint}, for a total of **{result+bonus}!**"
+                else:
+                    printString += f"\n{indent}Rolled **{result}!**"
+
+        # If the string is too long for a single Discord message, ask the player to roll fewer dice.
+        if len(printString) > 2000:
+            printLines = printString.splitlines()
+            printString = ""
+            linesSkipped = 0
+            for line in printLines:
+                if line.startswith("Rolled ") or line.startswith("    Rolled "):
+                    linesSkipped += 1
+                else:
+                    if linesSkipped:
+                        printString += f"\nTrimming {pluralize(linesSkipped), "line"} to conserve message length..."
+                        linesSkipped = 0
+                    printString += f"\n{line}"
+        if len(printString) > 2000:
+            printString = "The final message was too long, even after trimming. Please try again, rolling fewer dice at once."
+
+        if interaction.response.is_done():
+            await interaction.followup.send(printString.strip())
+        else:
+            await interaction.response.send_message(printString.strip())
+
+# The setup function is required to load the cog
+async def setup(bot):
+    await bot.add_cog(Utility(bot))
+    await bot.add_cog(Dice(bot))

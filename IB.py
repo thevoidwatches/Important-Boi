@@ -1,7 +1,6 @@
 import discord
 import random
 import dicemod
-import math
 import re
 
 random.seed()
@@ -11,13 +10,7 @@ async def check(arg, a, b, channel):
   
   # When called by another function, gives a simple result of the degrees of success.
   if arg == "func":
-    comp = a-b
-    if comp >= 0:
-      # Add 1 to correctly calculate degrees of success, as 0-4 are one degree of success.
-      comp += 1
-      return math.ceil(comp/5)
-    else:
-      return math.floor(comp/5)
+    return dicemod.calc_degrees(a, b)
     
   # When called directuly, gives a more verbose result.
   else:
@@ -111,7 +104,7 @@ async def graded(arg, channel, author):
     total = result
 
     # Checks if the roll was a crit
-    crit = await dicemod.critCheck(arg, result, True)
+    crit = dicemod.crit_check(arg, result, True)
     
     # Improves the result if you spent a hero point
     if "hp" in arg and result < 11:
@@ -126,10 +119,10 @@ async def graded(arg, channel, author):
     # Checks the number of degrees of success
     degrees = await check("func", total, DC, channel)
     # Turns that into a verbose string
-    degrees = await dicemod.degrees(degrees, DC, crit)
+    degrees = dicemod.degrees(degrees, DC, crit)
 
     # Adds the final result to the string that will be printd.
-    printString += await dicemod.printResult(result, hp, bonusPrint, total, crit, degrees)
+    printString += dicemod.print_result(result, hp, bonusPrint, total, crit, degrees)
 
     # Adds a newline to the string that will be printed if this isn't the final roll to be made.
     if roll+1 != rolls:
@@ -263,7 +256,7 @@ async def roll(arg, channel, author):
 
 
     #checks if it was a crit
-    crit = await dicemod.critCheck(arg, result, True)
+    crit = dicemod.crit_check(arg, result, True)
     #improves the number if you spent a hero point or if this was a defense roll.
     if "hp" in arg and result < 11:
       total += 10
@@ -277,7 +270,7 @@ async def roll(arg, channel, author):
     #adds the bonus
     total += bonus
 
-    printString += await dicemod.printResult(result, hp, bonusPrint, total, crit, "")
+    printString += dicemod.print_result(result, hp, bonusPrint, total, crit, "")
 
     if roll + 1 != rolls:
       printString += "\n"
@@ -349,7 +342,7 @@ async def tough(arg, channel, author):
     total = result
 
     #checks if it was a crit
-    crit = await dicemod.critCheck(arg, result, False)
+    crit = dicemod.crit_check(arg, result, False)
     #improves the result if you spent a hero point
     if "hp" in arg and result < 11:
       total += 10
@@ -363,13 +356,13 @@ async def tough(arg, channel, author):
     #checks the number of degrees of success
     degrees = await check("func", total, DC, channel)
     #turns that into a string
-    degreesPrint = await dicemod.degrees(degrees, DC, crit)
+    degreesPrint = dicemod.degrees(degrees, DC, crit)
 
     #corrects degrees if it was a crit
     if crit != "":
       degrees += 1
 
-    printString += await dicemod.printResult(result, hp, bonusPrint, total, crit, degreesPrint)
+    printString += dicemod.print_result(result, hp, bonusPrint, total, crit, degreesPrint)
 
     if degrees >= 0:
       printString += " You take no penalty!"
@@ -461,7 +454,7 @@ async def weak(arg, channel, author):
 
     pointsLost = DC - total
 
-    printString += await dicemod.printResult(result, hp, bonusPrint, total, "", "") + "With a DC of " + str(DC) + ","
+    printString += dicemod.print_result(result, hp, bonusPrint, total, "", "") + "With a DC of " + str(DC) + ","
 
     if pointsLost > 0:
       printString += " you lose **" + str(pointsLost) + " PP** from the affected trait or traits!"
@@ -514,7 +507,7 @@ async def readArgs(arg, channel, author):
         `%` If this argument is included, all arguments following it will be printed prior to rolls being made, allowing you to label your rolls.
         `hp` If this argument is included, any roll of 10 or below will have 10 added to it, as if this roll was rerolled using a hero point. This will not trigger a critical success if it occurs.
         `imp1` `imp2` `imp3` `imp4` If any of these arguments are included, rolls will be counted as critical successes on numbers below 20, as if this roll was made using a number of ranks of Improved Critical.""")
-    case "$a" | "$aff"  "$affliction":
+    case "$a" | "$aff" | "$affliction":
       if "?" in arg:
         await channel.send("""**Afflictions**
     To roll a resistance check against an affliction, you can use `$a`, `$aff`, or `$affliction`. Usage is as follows:

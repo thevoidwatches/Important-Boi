@@ -1,50 +1,54 @@
-import discord
+import math
 
-async def critCheck(arg, result, improved):
-  # Closes immediately if this is a roll being made by minions
-  if "min" in arg or "minion" in arg or "m" in arg:
-    return ""
+def crit_check(arg, result, improved):
+    """Closes immediately if this is a roll being made by minions."""
+    if "min" in arg or "minion" in arg or "m" in arg:
+        return ""
 
-  # Sets the critical value
-  critVal = 20
-  if improved == True:
-    if "imp4" in arg:
-      critVal = 16
-    elif "imp3" in arg:
-      critVal = 17
-    elif "imp2" in arg:
-      critVal = 18
-    elif "imp1" in arg:
-      critVal = 19
-      
-  #checks if it was a crit
-  if result >= critVal:
-    return "**, which is a **crit"
-  else:
-    return ""
+    # Sets the critical value
+    crit_val = 20
+    if improved:
+        if "imp4" in arg:
+            crit_val = 16
+        elif "imp3" in arg:
+            crit_val = 17
+        elif "imp2" in arg:
+            crit_val = 18
+        elif "imp1" in arg:
+            crit_val = 19
 
-async def degrees(degrees, DC, crit):
-  # Takes in the degrees of success, the DC, and if the roll was a crit, and returns a verbose string summarizing it.
-  if crit != "":
-    degrees += 1
-  if degrees >= 0:
-    if degrees == 1:
-      return "Against a DC of " + str(DC) + ", that's 1 degree of success!"
+    if result >= crit_val:
+        return "**, which is a **crit"
     else:
-      return "Against a DC of " + str(DC) + ", that's " + str(degrees) + " degrees of success!"
-  else:
-    if degrees == -1:
-      return "Against a DC of " + str(DC) + ", that's 1 degree of failure!"
+        return ""
+
+def degrees(deg, DC, crit):
+    """Takes in the degrees of success, the DC, and if the roll was a crit, and returns a verbose string summarizing it."""
+    if crit != "":
+        deg += 1
+    abs_deg = abs(deg)
+    word = "success" if deg >= 0 else "failure"
+    if abs_deg == 1:
+        return f"Against a DC of {DC}, that's 1 degree of {word}!"
     else:
-      return "Against a DC of " + str(DC) + ", that's " + str(degrees * -1) + " degrees of failure!"
+        return f"Against a DC of {DC}, that's {abs_deg} degrees of {word}!"
 
-async def printResult(result, hp, bonus, total, crit, degrees):
-  # Takes in the various aspects of the roll, and returns a verbose string summarizing the result.
-  crit5 = ""
-  if crit != "":
-    crit5 = "That's an effective **" + str(total + 5) + "!** "
+def print_result(result, hp, bonus, total, crit, degrees):
+    """Takes in the various aspects of the roll, and returns a verbose string summarizing the result."""
+    crit5 = ""
+    if crit != "":
+        crit5 = f"That's an effective **{total + 5}!** "
 
-  if result == total:
-    return "Rolled a **" + str(result) + crit + "!** " + crit5 + degrees
-  else:
-    return "Rolled a " + str(result) + hp + bonus + ", for a total of **" + str(total) + crit + "**! " + crit5 + degrees
+    if result == total:
+        return f"Rolled a **{result}{crit}!** {crit5}{degrees}"
+    else:
+        return f"Rolled a {result}{hp}{bonus}, for a total of **{total}{crit}**! {crit5}{degrees}"
+
+def calc_degrees(total, DC):
+    """Calculate degrees of success (positive) or failure (negative) from a total and DC."""
+    comp = total - DC
+    if comp >= 0:
+        comp += 1
+        return math.ceil(comp / 5)
+    else:
+        return math.floor(comp / 5)
