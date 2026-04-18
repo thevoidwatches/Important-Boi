@@ -1,5 +1,5 @@
 import discord
-import asyncio
+import logging
 import IB
 from discord.ext import commands
 
@@ -16,6 +16,8 @@ async def on_ready():
 
 @bot.event
 async def setup_hook():
+    await bot.load_extension("commands_dicebot")
+    await bot.load_extension("commands_mnm")
     await bot.tree.sync()
 
 @bot.event
@@ -35,11 +37,5 @@ async def on_message(message):
     # Process commands so cog-based commands also work
     await bot.process_commands(message)
 
-async def main():
-    async with bot:
-        await bot.load_extension("commands_dicebot")
-        await bot.load_extension("commands_mnm")
-        token = open('auth.txt').read().strip()
-        await bot.start(token, reconnect=True)
-
-asyncio.run(main())
+token = open('auth.txt').read().strip()
+bot.run(token, reconnect=True, log_level=logging.WARNING)
